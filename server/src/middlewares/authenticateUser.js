@@ -1,7 +1,6 @@
-import jwt from 'jsonwebtoken';
 import asyncHandler from './asyncHandler.js';
 import ApiError from '../utils/ApiError.js';
-
+import { verifyAccessToken } from '../utils/token.js';
 
 const authenticateUser = asyncHandler(async (req, _, next) => {
     const authHeader = req.header("Authorization");
@@ -13,29 +12,23 @@ const authenticateUser = asyncHandler(async (req, _, next) => {
             : null
         );
 
-    if(!token){
+    if (!token) {
         throw new ApiError(
             401,
             "Access token is missing"
         );
     }
 
-    try{
-        const decodedToken = jwt.verify(
-            token,
-            process.env.ACCESS_TOKEN_SECRET
-        );
-        
+    try {
+        const decodedToken = verifyAccessToken(token);
         req.user = decodedToken;
         next();
-
-    }catch(err){
+    } catch (err) {
         throw new ApiError(
             401,
             "Invalid or expired access token"
         );
     }
 });
-
 
 export default authenticateUser;
